@@ -1,6 +1,10 @@
 # The Daily Stack
 
-Tech news today is scattered across Hacker News, X, Reddit, LinkedIn, and a dozen newsletters, wrapped in hype and delivered as an infinite feed that never tells you when to stop. The Daily Stack is the opposite: a calm, finite daily edition built specifically for people who work in tech. Every day there is exactly one dated front page with exactly ten curated stories, organized into five sections — AI/ML, Security, DevTools, Infrastructure/Cloud, and Industry & Business. Each story is a short, original summary with clear source attribution and a link out to the original reporting; this project curates and summarizes, it does not republish. There is no infinite scroll, no algorithmic feed, and no personalization — everyone reads the same finite edition, the way a morning newspaper used to work. When you reach the bottom of the page, you are done for the day, which is the entire point. That finite, ritual-like shape is the bet: a product that respects your attention is more likely to earn a daily habit than one that competes for endless engagement. The current build is a working prototype aimed at software engineers, IT professionals, engineering leaders, and CS students who want industry awareness without doomscrolling. It ships with realistic seed data out of the box, and is wired to read from a Supabase database once one is connected, so the path from prototype to real curated content is a configuration change, not a rewrite. The next major piece of work is an automated curation pipeline that pulls from real sources, summarizes with an LLM, and publishes a new edition each day. See [docs/prd.md](docs/prd.md) for the full product spec, including goals, non-goals, and what's intentionally out of scope for this version.
+Tech news today is scattered across Hacker News, X, Reddit, LinkedIn, and a dozen newsletters, wrapped in hype. The Daily Stack is the finite daily edition built specifically for people who work in tech. Every day there is exactly one dated front page with exactly ten curated stories, organized into five sections — AI/ML, Security, DevTools, Infrastructure/Cloud, and Industry & Business.
+
+The current build is a working prototype. Improvements are planned.
+
+See [docs/prd.md](docs/prd.md) for the full product spec.
 
 See [docs/prd.md](docs/prd.md) for the full product spec.
 
