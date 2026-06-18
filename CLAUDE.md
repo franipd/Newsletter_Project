@@ -30,6 +30,15 @@ Full product spec: see [docs/prd.md](docs/prd.md). That PRD is the source of tru
 └── ...
 ```
 
+## Visual design
+
+The site is styled as an editorial, newspaper-style reading experience, not a generic app/dashboard UI:
+
+- **Fonts**: `Source Serif 4` for headlines/mastheads (`font-serif`), `Inter` for body/UI text (`font-sans`) — set up in [src/app/layout.tsx](src/app/layout.tsx) via `next/font/google`
+- **Colors**: warm off-white background and ink-black text (not pure white/black), one accent color (a muted brick red) used sparingly for section ticks, hover underlines, and source links — defined as CSS variables in [src/app/globals.css](src/app/globals.css) (`--background`, `--foreground`, `--rule`, `--accent`, `--muted`)
+- **Masthead pattern**: rule lines (`border-rule`) instead of generic Tailwind `border-neutral-*`, asymmetric edition/date line, serif title
+- When adding new UI, reuse these tokens (`bg-accent`, `text-muted`, `border-rule`, `font-serif`/`font-sans`) rather than introducing new ad hoc colors or falling back to Tailwind's default neutral/gray palette
+
 ## Content & publishing model
 
 - Editions are modeled as: one edition → 10 stories → grouped into 5 sections

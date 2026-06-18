@@ -2,9 +2,7 @@
 
 Tech news today is scattered across Hacker News, X, Reddit, LinkedIn, and a dozen newsletters, wrapped in hype. The Daily Stack is the finite daily edition built specifically for people who work in tech. Every day there is exactly one dated front page with exactly ten curated stories, organized into five sections — AI/ML, Security, DevTools, Infrastructure/Cloud, and Industry & Business.
 
-The current build is a working prototype. Improvements are planned.
-
-See [docs/prd.md](docs/prd.md) for the full product spec.
+The current build is a working prototype styled as an editorial, newspaper-style reading experience — serif headlines, a fixed masthead, and section rules — rather than a generic app UI. Improvements are planned.
 
 See [docs/prd.md](docs/prd.md) for the full product spec.
 

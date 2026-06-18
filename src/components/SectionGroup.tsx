@@ -13,10 +13,11 @@ export default function SectionGroup({
 
   return (
     <section id={toAnchorId(section)} className="scroll-mt-16 py-8">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+      <h2 className="flex items-center gap-2 font-serif text-xl font-semibold text-foreground">
+        <span aria-hidden className="h-4 w-1.5 bg-accent" />
         {section}
       </h2>
-      <div className="mt-2">
+      <div className="mt-3">
         {stories.map((story) => (
           <ArticleCard key={story.id} story={story} />
         ))}

@@ -19,16 +19,17 @@ export default async function Home() {
     <>
       <SectionNav />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4">
-        <header className="border-b border-neutral-200 py-10 text-center">
-          <p className="text-sm font-medium uppercase tracking-widest text-neutral-500">
-            Edition #{edition.editionNumber}
-          </p>
-          <h1 className="mt-2 text-4xl font-bold text-neutral-950 sm:text-5xl">
+        <header className="border-b-4 border-rule pb-6 pt-10">
+          <div className="flex items-baseline justify-between border-b border-rule/30 pb-3 text-xs font-medium uppercase tracking-[0.2em] text-muted">
+            <span>Edition №&nbsp;{edition.editionNumber}</span>
+            <span className="tabular-nums">{formatDate(edition.date)}</span>
+          </div>
+          <h1 className="mt-6 text-center font-serif text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
             The Daily Stack
           </h1>
-          <p className="mt-3 text-sm text-neutral-600">
-            {formatDate(edition.date)} · {edition.stories.length} stories ·
-            today&rsquo;s edition
+          <p className="mt-3 text-center text-sm italic text-muted">
+            {edition.stories.length} stories, five sections, no scrolling
+            past the end.
           </p>
         </header>
 
@@ -40,8 +41,13 @@ export default async function Home() {
           />
         ))}
 
-        <footer className="border-t border-neutral-200 py-10 text-center text-sm text-neutral-500">
-          That&rsquo;s today&rsquo;s edition. You&rsquo;re done — go build something.
+        <footer className="border-t-2 border-rule py-10 text-center">
+          <p className="font-serif text-lg italic text-foreground">
+            That&rsquo;s today&rsquo;s edition.
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            You&rsquo;re done — go build something.
+          </p>
         </footer>
       </main>
     </>

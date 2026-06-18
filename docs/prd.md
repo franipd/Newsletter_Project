@@ -94,6 +94,7 @@ A CS student preparing for her first job checks The Daily Stack each morning as 
 | Manual publish means editions can be missed or delayed if the publisher is unavailable | [ASSUMPTION] One person can reliably publish each edition; no redundancy needed in v1 |
 | Competitor newsletters (TLDR, The Pragmatic Engineer, Morning Brew Tech) have large existing audiences — differentiation must be felt, not just described | [ASSUMPTION] The finite "you're done" framing is meaningfully different from competitors and users will feel it immediately |
 | The five sections may not match what practitioners actually care about — hard to validate without real usage data | [ASSUMPTION] The five proposed sections cover primary practitioner interests without needing personalisation in v1 |
+| A newspaper-style visual design (serif headlines, rule lines, muted accent color) may not resonate with a practitioner audience used to product-style UIs — hard to validate without user feedback | [ASSUMPTION] Leaning visually into the "morning newspaper" metaphor (implemented in v1) reinforces the finite-edition concept rather than feeling old-fashioned or off-brand for a tech audience |
 
 ---
 
