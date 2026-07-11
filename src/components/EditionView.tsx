@@ -3,6 +3,7 @@ import { Edition, SECTIONS, StopPressItem } from "@/lib/types";
 import { EditionSummary } from "@/lib/get-editions";
 import SectionNav from "@/components/SectionNav";
 import SectionGroup from "@/components/SectionGroup";
+import AgentWire from "@/components/AgentWire";
 
 function formatUtcTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("en-GB", {
@@ -45,9 +46,10 @@ export default function EditionView({
       {stopPress && (
         <aside
           aria-label="Stop press"
-          className="border-b-2 border-accent bg-accent/10"
+          className="anim-slide-down border-b-2 border-accent bg-accent/10"
         >
           <p className="mx-auto max-w-3xl px-4 py-2 text-sm">
+            <span className="wire-dot mr-2 align-middle" aria-hidden="true" />
             <span className="mr-3 font-serif text-xs font-bold uppercase tracking-[0.25em] text-accent">
               Stop press
             </span>
@@ -67,7 +69,7 @@ export default function EditionView({
       )}
       <SectionNav />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4">
-        <header className="border-b-4 border-rule pb-6 pt-10">
+        <header className="anim-fade-up border-b-4 border-rule pb-6 pt-10">
           <div className="flex items-baseline justify-between border-b border-rule/30 pb-3 text-xs font-medium uppercase tracking-[0.2em] text-muted">
             <span>Edition №&nbsp;{edition.editionNumber}</span>
             <span className="tabular-nums">{formatDate(edition.date)}</span>
@@ -80,12 +82,9 @@ export default function EditionView({
             past the end.
           </p>
           {edition.stats && (
-            <p className="mt-2 text-center text-xs tracking-wide text-muted">
-              This edition: {edition.stats.curators} agents,{" "}
-              {edition.stats.searches} web searches, {edition.stats.candidates}{" "}
-              candidates, {edition.stories.length} stories. Published{" "}
-              {formatUtcTime(edition.stats.publishedAt)} UTC.
-            </p>
+            <AgentWire
+              text={`This edition: ${edition.stats.curators} agents, ${edition.stats.searches} web searches, ${edition.stats.candidates} candidates, ${edition.stories.length} stories. Published ${formatUtcTime(edition.stats.publishedAt)} UTC.`}
+            />
           )}
           {recent.length > 1 && (
             <nav
@@ -120,23 +119,25 @@ export default function EditionView({
         </header>
 
         {edition.editorsNote && (
-          <div className="mt-8 border-l-2 border-accent pl-4">
+          <div className="anim-fade-up anim-delay-1 mt-8 border-l-2 border-accent pl-4">
             <p className="font-serif italic text-foreground">
               {edition.editorsNote}
             </p>
             <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted">
-              — The Editor (Claude Sonnet)
+              — The Editor
             </p>
           </div>
         )}
 
-        {SECTIONS.map((section) => (
-          <SectionGroup
-            key={section}
-            section={section}
-            stories={edition.stories.filter((s) => s.section === section)}
-          />
-        ))}
+        <div className="anim-fade-up anim-delay-2">
+          {SECTIONS.map((section) => (
+            <SectionGroup
+              key={section}
+              section={section}
+              stories={edition.stories.filter((s) => s.section === section)}
+            />
+          ))}
+        </div>
 
         {edition.alsoConsidered && edition.alsoConsidered.length > 0 && (
           <section

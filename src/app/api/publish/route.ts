@@ -167,7 +167,7 @@ Rules:
 - Polish headlines (under 90 chars, sentence case) and summaries (2-3 sentences).
 - Keep source_name and source_url EXACTLY as given — never alter or invent URLs. Drop any candidate without a real https URL.
 - Prefer stories with practitioner impact.
-- editors_note: 1-2 sentences, first person, on today's hardest judgment call — what you cut and why, or what made the front page. Calm and specific, no hype.
+- editors_note: 1-2 sentences, first person, on today's hardest judgment call — what you cut and why, or what made the front page. Calm and specific, no hype. Never mention AI, models, or vendor names when referring to yourself — you are simply "the editor".
 - also_considered: every remaining candidate you did NOT select (headline + source_url only, deduplicated).${errorNote}
 
 === CANDIDATES ===
