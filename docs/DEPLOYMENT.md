@@ -32,12 +32,13 @@ git diff --cached | grep -iE "supabase.*key|anon|service_role"   # should print 
 3. Wait ~2 minutes for the project to provision.
 4. Open **SQL Editor** (left sidebar) → **New query** → paste the entire contents of [`supabase/schema.sql`](../supabase/schema.sql) → **Run**. You should see "Success".
 5. New query again → paste the contents of [`supabase/seed.sql`](../supabase/seed.sql) → **Run**. This inserts Edition #1 with its 10 stories.
+   - If a "Potential issue detected" dialog warns about a table called `usage` without Row Level Security, that's a false positive — the scanner matched the phrase "into usage-based" inside a story headline. seed.sql creates no tables (RLS is already enabled by schema.sql). Click **Run without RLS**.
 6. Verify: **Table Editor** → `editions` should show 1 row, `stories` should show 10 rows.
-7. Get your credentials: **Project Settings → API**. Copy two values:
+7. Get your credentials: **Project Settings → API Keys**. Copy two values:
    - **Project URL** (looks like `https://xxxx.supabase.co`)
-   - **anon / public key** (a long string starting with `eyJ`)
+   - **Publishable key** (starts with `sb_publishable_`; older projects show a legacy "anon" key starting with `eyJ` — either works)
 
-   Ignore the `service_role` key — this app never needs it, and it must never leave Supabase settings.
+   Never use the **secret key** (`sb_secret_`, formerly `service_role`) — this app never needs it, and it must never leave Supabase settings.
 
 ---
 
