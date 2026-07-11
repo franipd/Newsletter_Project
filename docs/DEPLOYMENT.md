@@ -1,0 +1,83 @@
+# Deploying The Daily Stack to Vercel
+
+A step-by-step guide for a non-engineer. Total time: ~20 minutes. No terminal required except step 1.
+
+**Security rule for every step:** the Supabase URL and anon key go ONLY into Vercel's environment variable settings and your local `.env.local`. Never paste them into code, commit them to git, or share them in chat/screenshots. The anon key is designed to be public-facing, but treat it carefully anyway; never expose the `service_role` key anywhere.
+
+---
+
+## Part 1 — Push the code to GitHub
+
+Vercel deploys from a git repository. If `claude-code-starter` is already on GitHub, just push the latest changes and skip to Part 2.
+
+```bash
+git add Newsletter_Project .claude memory.md
+git commit -m "Prepare The Daily Stack for Vercel deployment"
+git push
+```
+
+Before pushing, confirm no secrets are staged:
+
+```bash
+git status              # .env.local must NOT appear here
+git diff --cached | grep -iE "supabase.*key|anon|service_role"   # should print nothing
+```
+
+---
+
+## Part 2 — Create the Supabase project
+
+1. Go to [supabase.com](https://supabase.com) → sign in → **New project**
+2. Name: `daily-stack` (any name works). Choose a region near your readers. Set a strong database password (Supabase stores it; you won't need it for this app).
+3. Wait ~2 minutes for the project to provision.
+4. Open **SQL Editor** (left sidebar) → **New query** → paste the entire contents of [`supabase/schema.sql`](../supabase/schema.sql) → **Run**. You should see "Success".
+5. New query again → paste the contents of [`supabase/seed.sql`](../supabase/seed.sql) → **Run**. This inserts Edition #1 with its 10 stories.
+6. Verify: **Table Editor** → `editions` should show 1 row, `stories` should show 10 rows.
+7. Get your credentials: **Project Settings → API**. Copy two values:
+   - **Project URL** (looks like `https://xxxx.supabase.co`)
+   - **anon / public key** (a long string starting with `eyJ`)
+
+   Ignore the `service_role` key — this app never needs it, and it must never leave Supabase settings.
+
+---
+
+## Part 3 — Deploy on Vercel
+
+1. Go to [vercel.com](https://vercel.com) → sign in (easiest with your GitHub account) → **Add New… → Project**
+2. **Import** the `claude-code-starter` repository.
+3. **Root Directory** — this is the step people miss: click **Edit** and select `Newsletter_Project`. The app lives in this subfolder, not the repo root.
+4. Framework Preset should auto-detect **Next.js**. Leave build settings as default.
+5. Expand **Environment Variables** and add:
+
+   | Name | Value |
+   |------|-------|
+   | `NEXT_PUBLIC_SUPABASE_URL` | your Project URL from Part 2 |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your anon key from Part 2 |
+
+6. Click **Deploy**. First build takes 1–2 minutes.
+7. Open the deployment URL. You should see Edition № 1 dated June 18, 2026 — now served from Supabase, not seed data.
+
+If you skip step 5, the site still deploys and shows the built-in seed data — same content, just not database-backed.
+
+---
+
+## Part 4 — Verify
+
+- [ ] Front page shows "Edition № 1" with a date and exactly 10 stories in 5 sections
+- [ ] Section nav links scroll to the right section
+- [ ] "Read source ↗" links open in a new tab
+- [ ] To confirm Supabase is live (not seed fallback): edit a headline in the Supabase Table Editor, redeploy or wait for revalidation, and check it appears on the site. Then edit it back.
+
+---
+
+## Publishing future editions
+
+Insert a new row in `editions` (next date + edition number) and 10 rows in `stories` via the Supabase Table Editor or SQL. The site always shows the most recent edition automatically.
+
+The repo has a `/publish-edition` command that drafts the SQL for a new edition — see the root README's commands list. Review every generated SQL statement before running it in Supabase.
+
+## Troubleshooting
+
+- **Build fails on Vercel** — check the build log; the most common cause is the Root Directory not set to `Newsletter_Project`.
+- **Site shows the old June 18 seed edition after adding new data** — the page may be statically cached. Trigger a redeploy (Vercel → Deployments → ⋯ → Redeploy).
+- **Blank/error page** — check the env variable names are exactly `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (typos silently fall back to seed data; wrong values can error).
