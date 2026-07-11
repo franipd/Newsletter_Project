@@ -48,7 +48,7 @@ The site is styled as an editorial, newspaper-style reading experience, not a ge
 
 ## Deployment & publishing
 
-- Deploy target is Vercel; the full human-run guide is [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Vercel Root Directory must be `Newsletter_Project`.
+- Deploy target is Vercel; the full human-run guide is [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). The app is at the repo root (github.com/franipd/Newsletter_Project), so Vercel's Root Directory stays at the default.
 - Database is Supabase: run `supabase/schema.sql` then `supabase/seed.sql` in the SQL editor. Env vars (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) live only in Vercel settings and local `.env.local`.
 - New editions are drafted with `/publish-edition` (root `.claude/` config): story-curator sub-agents on Haiku (cheap gathering), edition-editor on Sonnet (editorial judgment), edition-validator on Haiku (rule checks). Output goes to `drafts/` for human review; the human runs the SQL in Supabase. Use the cheapest model that can do each step — no Opus in this pipeline.
 - Run `/pre-deploy` (lint, type-check, build, secret scan) before any deploy.

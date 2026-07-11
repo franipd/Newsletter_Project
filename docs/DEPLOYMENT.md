@@ -8,10 +8,10 @@ A step-by-step guide for a non-engineer. Total time: ~20 minutes. No terminal re
 
 ## Part 1 — Push the code to GitHub
 
-Vercel deploys from a git repository. If `claude-code-starter` is already on GitHub, just push the latest changes and skip to Part 2.
+Vercel deploys from a git repository. This app lives at [github.com/franipd/Newsletter_Project](https://github.com/franipd/Newsletter_Project). If your latest changes are already pushed, skip to Part 2.
 
 ```bash
-git add Newsletter_Project .claude memory.md
+git add -A
 git commit -m "Prepare The Daily Stack for Vercel deployment"
 git push
 ```
@@ -44,20 +44,19 @@ git diff --cached | grep -iE "supabase.*key|anon|service_role"   # should print 
 ## Part 3 — Deploy on Vercel
 
 1. Go to [vercel.com](https://vercel.com) → sign in (easiest with your GitHub account) → **Add New… → Project**
-2. **Import** the `claude-code-starter` repository.
-3. **Root Directory** — this is the step people miss: click **Edit** and select `Newsletter_Project`. The app lives in this subfolder, not the repo root.
-4. Framework Preset should auto-detect **Next.js**. Leave build settings as default.
-5. Expand **Environment Variables** and add:
+2. **Import** the `Newsletter_Project` repository. (It's private — Vercel will ask for GitHub access the first time.)
+3. Framework Preset should auto-detect **Next.js**. The app is at the repo root, so leave Root Directory and build settings as default.
+4. Expand **Environment Variables** and add:
 
    | Name | Value |
    |------|-------|
    | `NEXT_PUBLIC_SUPABASE_URL` | your Project URL from Part 2 |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your anon key from Part 2 |
 
-6. Click **Deploy**. First build takes 1–2 minutes.
-7. Open the deployment URL. You should see Edition № 1 dated June 18, 2026 — now served from Supabase, not seed data.
+5. Click **Deploy**. First build takes 1–2 minutes.
+6. Open the deployment URL. You should see Edition № 1 dated June 18, 2026 — now served from Supabase, not seed data.
 
-If you skip step 5, the site still deploys and shows the built-in seed data — same content, just not database-backed.
+If you skip step 4, the site still deploys and shows the built-in seed data — same content, just not database-backed.
 
 ---
 
@@ -74,10 +73,10 @@ If you skip step 5, the site still deploys and shows the built-in seed data — 
 
 Insert a new row in `editions` (next date + edition number) and 10 rows in `stories` via the Supabase Table Editor or SQL. The site always shows the most recent edition automatically.
 
-The repo has a `/publish-edition` command that drafts the SQL for a new edition — see the root README's commands list. Review every generated SQL statement before running it in Supabase.
+If you work on this project through the course repo's Claude Code setup, the `/publish-edition` command drafts the SQL for a new edition. Review every generated SQL statement before running it in Supabase.
 
 ## Troubleshooting
 
-- **Build fails on Vercel** — check the build log; the most common cause is the Root Directory not set to `Newsletter_Project`.
+- **Build fails on Vercel** — check the build log; run `npm run build` locally first to reproduce the error.
 - **Site shows the old June 18 seed edition after adding new data** — the page may be statically cached. Trigger a redeploy (Vercel → Deployments → ⋯ → Redeploy).
 - **Blank/error page** — check the env variable names are exactly `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (typos silently fall back to seed data; wrong values can error).
