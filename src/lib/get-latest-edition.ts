@@ -1,6 +1,7 @@
 import { Edition } from "@/lib/types";
 import { seedEdition } from "@/data/seed-edition";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { mapEditionMeta } from "@/lib/get-editions";
 
 /**
  * Returns the most recently published edition.
@@ -12,9 +13,10 @@ export async function getLatestEdition(): Promise<Edition> {
     return seedEdition;
   }
 
+  // select * so the query still works before the liveness migration adds columns
   const { data: edition, error: editionError } = await supabase
     .from("editions")
-    .select("id, date, edition_number")
+    .select("*")
     .order("date", { ascending: false })
     .limit(1)
     .single();
@@ -44,5 +46,6 @@ export async function getLatestEdition(): Promise<Edition> {
       sourceName: s.source_name,
       sourceUrl: s.source_url,
     })),
+    ...mapEditionMeta(edition),
   };
 }

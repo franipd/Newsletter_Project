@@ -1,0 +1,21 @@
+# Pings the stop-press desk every 2 hours (06:17–22:17 UTC).
+# Vercel Hobby crons are daily-only, so GitHub Actions does the intraday
+# scheduling. The route itself decides whether anything is ribbon-worthy —
+# most runs return {"status":"quiet"}.
+name: stop-press-check
+
+on:
+  schedule:
+    - cron: "17 6-22/2 * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /api/stop-press
+        run: |
+          curl -sS -m 120 -X POST "https://the-daily-stack-newsletter.vercel.app/api/stop-press" \
+            -H "Authorization: Bearer $CRON_SECRET"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

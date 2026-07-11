@@ -34,12 +34,23 @@ const SECTION_FOCUS: Record<Section, string> = {
     "tech industry/business news relevant to engineers: hiring trends, funding and acquisitions with product impact, pricing model changes, regulation affecting developers",
 };
 
+interface RejectedCandidate {
+  headline: string;
+  source_url: string;
+}
+
+interface EditorOutput {
+  stories: DraftStory[];
+  editors_note: string;
+  also_considered: RejectedCandidate[];
+}
+
 // Structured-output schema for the editor. Counts are enforced in code —
 // the schema guarantees shape and section values only.
 const EDITION_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["stories"],
+  required: ["stories", "editors_note", "also_considered"],
   properties: {
     stories: {
       type: "array",
@@ -56,6 +67,19 @@ const EDITION_SCHEMA = {
         },
       },
     },
+    editors_note: { type: "string" },
+    also_considered: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["headline", "source_url"],
+        properties: {
+          headline: { type: "string" },
+          source_url: { type: "string" },
+        },
+      },
+    },
   },
 } as const;
 
@@ -64,7 +88,7 @@ async function curateSection(
   anthropic: Anthropic,
   section: Section,
   isoDate: string,
-): Promise<string> {
+): Promise<{ text: string; searches: number }> {
   const prompt = `Gather candidate stories for the "${section}" section of The Daily Stack, a curated daily tech newsletter for software practitioners. Today's date: ${isoDate}.
 
 Search the web and find 4 real, current (last ~48 hours preferred, last week max) ${SECTION_FOCUS[section]}.
@@ -87,6 +111,10 @@ Editorial voice: calm, factual, no hype. Return the 4 candidates as a plain list
     messages,
   });
 
+  const countSearches = (r: Anthropic.Message) =>
+    r.content.filter((b) => b.type === "server_tool_use").length;
+  let searches = countSearches(response);
+
   // Server-side web search can pause after its iteration limit; resume by
   // re-sending the conversation (max 5 continuations).
   let continuations = 0;
@@ -98,13 +126,15 @@ Editorial voice: calm, factual, no hype. Return the 4 candidates as a plain list
       tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 }],
       messages,
     });
+    searches += countSearches(response);
     continuations++;
   }
 
-  return response.content
+  const text = response.content
     .filter((b): b is Anthropic.TextBlock => b.type === "text")
     .map((b) => b.text)
     .join("\n");
+  return { text, searches };
 }
 
 /** The editor: pick the final 10 from 20 candidates, returns validated JSON. */
@@ -114,7 +144,7 @@ async function editEdition(
   isoDate: string,
   editionNumber: number,
   previousErrors?: string[],
-): Promise<DraftStory[]> {
+): Promise<EditorOutput> {
   const errorNote = previousErrors?.length
     ? `\n\nYour previous attempt failed validation:\n- ${previousErrors.join("\n- ")}\nFix these issues.`
     : "";
@@ -136,7 +166,9 @@ Rules:
 - No story may appear twice, even across sections (dedupe by topic/URL).
 - Polish headlines (under 90 chars, sentence case) and summaries (2-3 sentences).
 - Keep source_name and source_url EXACTLY as given — never alter or invent URLs. Drop any candidate without a real https URL.
-- Prefer stories with practitioner impact.${errorNote}
+- Prefer stories with practitioner impact.
+- editors_note: 1-2 sentences, first person, on today's hardest judgment call — what you cut and why, or what made the front page. Calm and specific, no hype.
+- also_considered: every remaining candidate you did NOT select (headline + source_url only, deduplicated).${errorNote}
 
 === CANDIDATES ===
 ${candidates}`,
@@ -148,8 +180,7 @@ ${candidates}`,
     .filter((b): b is Anthropic.TextBlock => b.type === "text")
     .map((b) => b.text)
     .join("");
-  const parsed = JSON.parse(text) as { stories: DraftStory[] };
-  return parsed.stories;
+  return JSON.parse(text) as EditorOutput;
 }
 
 /** The validator: deterministic rule checks (replaces the Haiku sub-agent). */
@@ -225,15 +256,16 @@ async function publishEdition(): Promise<NextResponse> {
     SECTIONS.map((section) => curateSection(anthropic, section, isoDate)),
   );
   const candidates = SECTIONS.map(
-    (section, i) => `--- ${section} candidates ---\n${curated[i]}`,
+    (section, i) => `--- ${section} candidates ---\n${curated[i].text}`,
   ).join("\n\n");
+  const totalSearches = curated.reduce((sum, c) => sum + c.searches, 0);
 
   // Stage 2 + 3 — editor (Sonnet, structured output) with one validation retry
-  let stories = await editEdition(anthropic, candidates, isoDate, editionNumber);
-  let errors = validateEdition(stories);
+  let edited = await editEdition(anthropic, candidates, isoDate, editionNumber);
+  let errors = validateEdition(edited.stories);
   if (errors.length > 0) {
-    stories = await editEdition(anthropic, candidates, isoDate, editionNumber, errors);
-    errors = validateEdition(stories);
+    edited = await editEdition(anthropic, candidates, isoDate, editionNumber, errors);
+    errors = validateEdition(edited.stories);
   }
   if (errors.length > 0) {
     return NextResponse.json(
@@ -241,13 +273,35 @@ async function publishEdition(): Promise<NextResponse> {
       { status: 502 },
     );
   }
+  const stories = edited.stories;
 
   // Stage 4 — publish to Supabase
-  const { data: edition, error: editionError } = await db
+  const editionRow = {
+    date: isoDate,
+    edition_number: editionNumber,
+    stats: {
+      curators: SECTIONS.length,
+      searches: totalSearches,
+      candidates: stories.length + edited.also_considered.length,
+      published_at: new Date().toISOString(),
+    },
+    editors_note: edited.editors_note,
+    also_considered: edited.also_considered,
+  };
+  let { data: edition, error: editionError } = await db
     .from("editions")
-    .insert({ date: isoDate, edition_number: editionNumber })
+    .insert(editionRow)
     .select("id")
     .single();
+  if (editionError?.message?.includes("column")) {
+    // Liveness migration not yet applied — publish without the metadata
+    // rather than failing the whole edition.
+    ({ data: edition, error: editionError } = await db
+      .from("editions")
+      .insert({ date: isoDate, edition_number: editionNumber })
+      .select("id")
+      .single());
+  }
   if (editionError || !edition) {
     return NextResponse.json(
       { error: `edition insert failed: ${editionError?.message}` },

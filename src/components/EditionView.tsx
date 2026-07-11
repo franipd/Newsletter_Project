@@ -1,8 +1,16 @@
 import Link from "next/link";
-import { Edition, SECTIONS } from "@/lib/types";
+import { Edition, SECTIONS, StopPressItem } from "@/lib/types";
 import { EditionSummary } from "@/lib/get-editions";
 import SectionNav from "@/components/SectionNav";
 import SectionGroup from "@/components/SectionGroup";
+
+function formatUtcTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
+}
 
 function formatDate(iso: string): string {
   return new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", {
@@ -23,15 +31,40 @@ function formatShortDate(iso: string): string {
 export default function EditionView({
   edition,
   recent,
+  stopPress,
 }: {
   edition: Edition;
   recent: EditionSummary[];
+  stopPress?: StopPressItem | null;
 }) {
   const latestDate = recent[0]?.date;
   const isLatest = edition.date === latestDate;
 
   return (
     <>
+      {stopPress && (
+        <aside
+          aria-label="Stop press"
+          className="border-b-2 border-accent bg-accent/10"
+        >
+          <p className="mx-auto max-w-3xl px-4 py-2 text-sm">
+            <span className="mr-3 font-serif text-xs font-bold uppercase tracking-[0.25em] text-accent">
+              Stop press
+            </span>
+            <span className="mr-2 text-xs tabular-nums text-muted">
+              {formatUtcTime(stopPress.createdAt)} UTC
+            </span>
+            <a
+              href={stopPress.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground decoration-accent decoration-2 underline-offset-4 hover:underline"
+            >
+              {stopPress.headline}&nbsp;&#8599;
+            </a>
+          </p>
+        </aside>
+      )}
       <SectionNav />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4">
         <header className="border-b-4 border-rule pb-6 pt-10">
@@ -46,6 +79,14 @@ export default function EditionView({
             {edition.stories.length} stories, five sections, no scrolling
             past the end.
           </p>
+          {edition.stats && (
+            <p className="mt-2 text-center text-xs tracking-wide text-muted">
+              This edition: {edition.stats.curators} agents,{" "}
+              {edition.stats.searches} web searches, {edition.stats.candidates}{" "}
+              candidates, {edition.stories.length} stories. Published{" "}
+              {formatUtcTime(edition.stats.publishedAt)} UTC.
+            </p>
+          )}
           {recent.length > 1 && (
             <nav
               aria-label="Past editions"
@@ -78,6 +119,17 @@ export default function EditionView({
           )}
         </header>
 
+        {edition.editorsNote && (
+          <div className="mt-8 border-l-2 border-accent pl-4">
+            <p className="font-serif italic text-foreground">
+              {edition.editorsNote}
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted">
+              — The Editor (Claude Sonnet)
+            </p>
+          </div>
+        )}
+
         {SECTIONS.map((section) => (
           <SectionGroup
             key={section}
@@ -85,6 +137,31 @@ export default function EditionView({
             stories={edition.stories.filter((s) => s.section === section)}
           />
         ))}
+
+        {edition.alsoConsidered && edition.alsoConsidered.length > 0 && (
+          <section
+            aria-label="Also considered"
+            className="border-t border-rule/30 py-8"
+          >
+            <h2 className="text-xs font-medium uppercase tracking-[0.2em] text-muted">
+              Also considered — cut by the editor
+            </h2>
+            <ul className="mt-3 space-y-1.5">
+              {edition.alsoConsidered.map((r) => (
+                <li key={r.sourceUrl} className="text-sm text-muted">
+                  <a
+                    href={r.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="decoration-accent decoration-2 underline-offset-4 hover:text-foreground hover:underline"
+                  >
+                    {r.headline}&nbsp;&#8599;
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <footer className="border-t-2 border-rule py-10 text-center">
           <p className="font-serif text-lg italic text-foreground">
