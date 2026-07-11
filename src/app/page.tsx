@@ -3,6 +3,10 @@ import { SECTIONS } from "@/lib/types";
 import SectionNav from "@/components/SectionNav";
 import SectionGroup from "@/components/SectionGroup";
 
+// Re-fetch from Supabase at most once every 5 minutes, so new editions
+// and story edits appear without a redeploy.
+export const revalidate = 300;
+
 function formatDate(iso: string): string {
   return new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", {
     weekday: "long",
