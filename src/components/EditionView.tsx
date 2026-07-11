@@ -215,6 +215,14 @@ export default function EditionView({
               </Link>
             )}
           </p>
+          <p className="mt-6">
+            <Link
+              href="/press"
+              className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted/60 transition-colors hover:text-foreground"
+            >
+              Press room
+            </Link>
+          </p>
         </footer>
       </main>
     </>

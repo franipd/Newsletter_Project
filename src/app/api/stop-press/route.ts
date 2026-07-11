@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase-admin";
+import { createAdminClient, areAgentsPaused } from "@/lib/supabase-admin";
 
 // Checked every ~2 hours by a GitHub Actions cron. A Haiku agent looks for
 // genuinely major breaking tech news; if found, one row goes into stop_press
@@ -16,6 +16,11 @@ async function checkStopPress(): Promise<NextResponse> {
   const db = createAdminClient();
   if (!db || !process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: "not configured" }, { status: 500 });
+  }
+
+  // Kill switch — checked before any AI call, so a paused run costs nothing.
+  if (await areAgentsPaused(db)) {
+    return NextResponse.json({ status: "paused" });
   }
 
   // One ribbon at a time — if one is active, don't even run the agent.

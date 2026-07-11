@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { SECTIONS, Section } from "@/lib/types";
-import { createAdminClient } from "@/lib/supabase-admin";
+import { createAdminClient, areAgentsPaused } from "@/lib/supabase-admin";
 
 // The full pipeline (5 curator searches + editor + validation) takes a few
 // minutes. Requires Fluid Compute (default on new Vercel projects).
@@ -224,6 +224,14 @@ async function publishEdition(): Promise<NextResponse> {
       { error: "ANTHROPIC_API_KEY not configured" },
       { status: 500 },
     );
+  }
+
+  // Kill switch — checked before any AI call, so a paused run costs nothing.
+  if (await areAgentsPaused(db)) {
+    return NextResponse.json({
+      status: "paused",
+      reason: "agents are paused — resume in the Press Room (/press)",
+    });
   }
 
   const isoDate = new Date().toISOString().slice(0, 10);
