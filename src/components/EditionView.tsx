@@ -109,7 +109,9 @@ export default function EditionView({
       </header>
 
       <Marquee
-        text={`The Daily Stack · Edition №${edition.editionNumber} · ${formatDate(edition.date)} · ${edition.stories.length} stories · five sections · you're done when you're done`}
+        text={`Edition №${edition.editionNumber} wire +++ ${edition.stories
+          .map((s) => s.headline)
+          .join(" +++ ")} +++`}
       />
 
       <SectionNav />

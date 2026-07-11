@@ -3,7 +3,9 @@
  * -50% for a seamless repeat; prefers-reduced-motion pauses it entirely.
  */
 export default function Marquee({ text }: { text: string }) {
-  const chunk = Array(4).fill(text.toUpperCase()).join(" · ");
+  // Short texts repeat to fill the track; long ones (headline wires) don't
+  const repeats = text.length > 160 ? 1 : 4;
+  const chunk = Array(repeats).fill(text.toUpperCase()).join("  ·  ");
   return (
     <div
       aria-hidden="true"
