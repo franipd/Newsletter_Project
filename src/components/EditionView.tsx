@@ -204,7 +204,7 @@ export default function EditionView({
           </p>
           <p className="mt-2 font-mono text-xs uppercase tracking-[0.25em] text-muted">
             {isLatest ? (
-              "You’re done — go build something."
+              "Now go make tomorrow’s headlines."
             ) : (
               <Link
                 href="/"

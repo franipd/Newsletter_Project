@@ -22,7 +22,7 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "The Daily Stack",
   description:
-    "A finite daily tech news edition for practitioners — read today's edition, then go build something.",
+    "A finite daily tech news edition for practitioners — read today's ten stories, then go make tomorrow's headlines.",
 };
 
 export default function RootLayout({

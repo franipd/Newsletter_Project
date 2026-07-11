@@ -43,7 +43,9 @@ export default function ReadingProgress() {
         aria-hidden="true"
         className="fixed bottom-4 right-4 z-50 border border-rule/20 bg-foreground px-2.5 py-1 font-mono text-[10px] tracking-[0.2em] text-background"
       >
-        {progress >= 100 ? "DONE — GO BUILD" : `${String(progress).padStart(3, "0")}%`}
+        {progress >= 100
+          ? "DONE — MAKE HEADLINES"
+          : `${String(progress).padStart(3, "0")}%`}
       </div>
     </>
   );
