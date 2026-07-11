@@ -39,6 +39,27 @@ Every morning at 06:00 UTC, a pipeline of agents searches the live web, curates 
 
 The website itself is a thin, fast reader — all intelligence runs at publish time. Data changes appear on the site within 5 minutes (ISR); code changes deploy automatically on push to `main`.
 
+### Agent architecture
+
+The pipeline is an **orchestrator–worker workflow with subagents** — not a peer-to-peer multi-agent system:
+
+```
+                ORCHESTRATOR (plain TypeScript — owns all control flow)
+                     │
+     ┌────┬────┬─────┼─────┬────┐
+     ▼    ▼    ▼     ▼     ▼    │    fan-out: 5 curator agents in parallel,
+   cur-1 cur-2 cur-3 cur-4 cur-5│    isolated contexts, one section each
+     └────┴────┴─────┼─────┴────┘
+                     ▼               fan-in: code aggregates candidates
+                  EDITOR             1 agent, schema-enforced JSON
+                     ▼
+                 VALIDATION          deterministic code + one retry loop
+                     ▼
+                  PUBLISH            Supabase insert, idempotent per date
+```
+
+Design properties: agents never communicate peer-to-peer (hub-and-spoke only); delegation is one level deep; each worker gets a fresh, minimal context; all state lives in the orchestrator and the database. The control flow is fixed in code — models fill in content, they never decide what happens next. This makes the pipeline cheap (no coordination overhead), debuggable (every stage inspectable), and safe (validation can't be skipped). The stop-press desk is a second, single-agent workflow on its own schedule.
+
 **Stack:** Next.js (App Router) · TypeScript · Tailwind CSS · Supabase (Postgres) · Anthropic API · Vercel (hosting + cron) · GitHub Actions (intraday cron)
 
 Full product spec: [docs/prd.md](docs/prd.md) · Build story: [docs/HOW-IT-WAS-BUILT.md](docs/HOW-IT-WAS-BUILT.md)

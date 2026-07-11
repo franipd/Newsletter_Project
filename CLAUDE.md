@@ -46,6 +46,16 @@ The site is styled as an editorial, newspaper-style reading experience, not a ge
 - Publishing happens two ways: automatically via `/api/publish` (a Vercel Cron hits it daily at 06:00 UTC; Haiku curators with web search → Sonnet editor with structured output → code validation → Supabase insert), or manually via the `/publish-edition` Claude Code skill + pasting SQL. The cron route is idempotent — one edition per date.
 - No infinite scroll, no "load more," no personalization in v1
 
+## Agent architecture
+
+The publishing pipeline is an **orchestrator–worker workflow with subagents**, not a free-form multi-agent system. Keep it that way unless the product genuinely needs agent-to-agent interaction.
+
+- Orchestrator: plain TypeScript in [src/app/api/publish/route.ts](src/app/api/publish/route.ts) — owns all control flow and state
+- Workers: 5 parallel curator agents (Haiku + web search, one section each, isolated contexts) → fan-in → 1 editor agent (Sonnet, schema-enforced JSON) → deterministic code validation with one retry → Supabase insert
+- Rules of the shape: no peer-to-peer agent communication (hub-and-spoke only); one level of delegation; validation stays in code, never in a model; models fill in content but never decide control flow
+- The stop-press desk ([src/app/api/stop-press/route.ts](src/app/api/stop-press/route.ts)) is a separate single-agent workflow on a 2-hour GitHub Actions schedule
+- The same architecture exists at dev time: `/publish-edition` runs curator/editor/validator sub-agents from the course repo's `.claude/agents/`, with a human approving the SQL
+
 ## Deployment & publishing
 
 - Deploy target is Vercel; the full human-run guide is [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). The app is at the repo root (github.com/franipd/Newsletter_Project), so Vercel's Root Directory stays at the default.
