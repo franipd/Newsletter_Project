@@ -43,7 +43,7 @@ The site is styled as an editorial, newspaper-style reading experience, not a ge
 
 - Editions are modeled as: one edition → 10 stories → grouped into 5 sections
 - Currently sourced from local seed data in `src/data/`; designed so swapping to a live Supabase table later doesn't require changing component code
-- Publishing a new edition is a **manual trigger** (per PRD) — no scheduling/automation in this milestone
+- Publishing happens two ways: automatically via `/api/publish` (a Vercel Cron hits it daily at 06:00 UTC; Haiku curators with web search → Sonnet editor with structured output → code validation → Supabase insert), or manually via the `/publish-edition` Claude Code skill + pasting SQL. The cron route is idempotent — one edition per date.
 - No infinite scroll, no "load more," no personalization in v1
 
 ## Deployment & publishing

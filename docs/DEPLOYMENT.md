@@ -70,6 +70,27 @@ If you skip step 4, the site still deploys and shows the built-in seed data — 
 
 ---
 
+## Daily auto-publish (agents in production)
+
+The app ships with a self-publishing pipeline at `/api/publish`, triggered daily at 06:00 UTC by a Vercel Cron (see `vercel.json`). Each run: 5 Haiku curators search the web per section → a Sonnet editor picks the final 10 stories (schema-enforced JSON) → deterministic validation → insert into Supabase. The front page picks it up within 5 minutes.
+
+To enable it, add three more environment variables in Vercel (Settings → Environment Variables, all environments):
+
+| Name | Value |
+|------|-------|
+| `ANTHROPIC_API_KEY` | your Anthropic API key (console.anthropic.com) |
+| `SUPABASE_SECRET_KEY` | Supabase **secret** key (`sb_secret_...`) — server-only, never `NEXT_PUBLIC_` |
+| `CRON_SECRET` | any random string (`openssl rand -hex 32`) — Vercel Cron sends it automatically |
+
+Then redeploy. The route is idempotent (one edition per date) and returns 401 without the secret. Trigger a test run manually:
+
+```bash
+curl -X POST https://your-site.vercel.app/api/publish \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+Rough cost: ~10–30¢/day in Anthropic API usage (Haiku searches + one Sonnet call).
+
 ## Publishing future editions
 
 Insert a new row in `editions` (next date + edition number) and 10 rows in `stories` via the Supabase Table Editor or SQL. The site always shows the most recent edition automatically.
