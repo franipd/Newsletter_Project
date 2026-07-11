@@ -7,7 +7,13 @@ import { useEffect, useState } from "react";
  * page load, with a blinking caret. Users who prefer reduced motion get the
  * full line on the first tick instead of the character-by-character reveal.
  */
-export default function AgentWire({ text }: { text: string }) {
+export default function AgentWire({
+  text,
+  className = "mt-2 text-center text-xs tracking-wide text-muted",
+}: {
+  text: string;
+  className?: string;
+}) {
   const [visibleChars, setVisibleChars] = useState(0);
 
   useEffect(() => {
@@ -31,10 +37,7 @@ export default function AgentWire({ text }: { text: string }) {
   const done = visibleChars >= text.length;
 
   return (
-    <p
-      aria-label={text}
-      className="mt-2 text-center text-xs tracking-wide text-muted"
-    >
+    <p aria-label={text} className={className}>
       <span aria-hidden="true">
         {text.slice(0, visibleChars)}
         {!done && <span className="wire-caret">&nbsp;</span>}
